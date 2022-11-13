@@ -3,6 +3,7 @@ version: '3'
 tasks:
 
   build-server:
+    deps: [ build-wasm ]
     cmds:
       - gox -osarch="windows/amd64" -ldflags "-s -w" -output "dist/papermaker_windows_amd64.exe" ./cmd/server/
       - gox -osarch="linux/amd64" -ldflags="-s -w -d" -output="dist/papermaker_linux_amd64" ./cmd/server/
@@ -14,7 +15,7 @@ tasks:
       - GOOS=js GOARCH=wasm go build -ldflags "-s -w -d" -o public/main.wasm cmd/wasm/main.go
 
   build:
-    deps: [ build-wasm, build-server ] 
+    deps: [ build-server ] 
     cmds:
       - echo "Build completed"
 

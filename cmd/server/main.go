@@ -17,6 +17,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/zikani03/papermaker"
+	"github.com/zikani03/papermaker/public"
 )
 
 func main() {
@@ -77,9 +78,9 @@ func main() {
 		w.Write([]byte(dataURL))
 	})
 
-	// FileServer(r, "/", http.FS(public.StaticFS))
+	FileServer(r, "/", http.FS(public.StaticFS))
 
-	FileServer(r, "/", http.Dir("./public"))
+	// FileServer(r, "/", http.Dir("./public"))
 	log.Println("Server started")
 
 	address := os.Getenv("PAPERMAKER_ADDRESS")

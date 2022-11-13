@@ -64,6 +64,7 @@ const QUESTION_TYPE = {
         downloadedData: null,
         outputName: '',        
         // UI stuff
+        useOfflineMode: true,
         isEditingQuestion: false,
         isEditingSection: false,
         hasMultipleSections: false,
@@ -172,6 +173,21 @@ const QUESTION_TYPE = {
         this.resetNewQuestion()
         this.isEditingQuestion = false
       },
+
+      generatePaper(data, outputFormat) {
+        if (this.useOfflineMode) {
+          let result = GeneratePaper(JSON.stringify(data), outputFormat)
+          if (result.indexOf('base64') > 0) {
+            return Promise.resolve(result)
+          }
+          let err = new Error('Failed to process request: ' + result)
+          if (result.indexOf('validationErrors') > 0) {
+            err.data = JSON.parse(result)
+          }
+          return Promise.reject(err)
+        }
+        return fallbackAPIBackedGeneratePaper(data, outputFormat)
+      },
   
       submitGenerate(event) {
         event.preventDefault()
@@ -220,7 +236,7 @@ const QUESTION_TYPE = {
         this.generating = true;
         this.paperGenerated = false;
 
-        _generatePaper(data, this.outputFormat)
+        this.generatePaper(data, this.outputFormat)
         .then(paperBase64Encoded => {
           this.downloadedData = paperBase64Encoded
           this.paperGenerated = true;
@@ -257,21 +273,7 @@ const QUESTION_TYPE = {
   // Register Lazyload directive
   app.use(vant.Lazyload);
   
-function _generatePaper(data, outputFormat) {
-  if (window._wasmModuleLoaded) {
-    let result = GeneratePaper(JSON.stringify(data), outputFormat)
-    if (result.indexOf('base64') > 0) {
-      return Promise.resolve(result)
-    }
-    let err = new Error('Failed to process request: ' + result)
-    if (result.indexOf('validationErrors') > 0) {
-      err.data = JSON.parse(result)
-    }
-    return Promise.reject(err)
-    // return Promise.reject(JSON.parse(result))
-  }
-  return fallbackAPIBackedGeneratePaper(data, outputFormat)
-}
+
 
 function fallbackAPIBackedGeneratePaper(data, outputFormat)  {
   return fetch(API_ENDPOINT, {
@@ -309,6 +311,7 @@ fetch("main.wasm").then(wasmModule => {
       console.error("Failed to load WASM module, try to reload the page... will use online API to process requests")
       window._wasmModuleLoaded = false;
       mountedApp.isWasmModuleLoaded = false;
+      mountedApp.useOfflineMode = false;
     })
 })
 
