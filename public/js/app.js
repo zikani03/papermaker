@@ -241,7 +241,12 @@ const QUESTION_TYPE = {
           this.downloadedData = paperBase64Encoded
           this.paperGenerated = true;
           this.generating = false;
-          setTimeout(() => this.$refs.downloadEl.click(), 300)
+          let justData = paperBase64Encoded.replace('data:application/msword;base64,', '');
+          toBytes(justData).then(byteData => {
+            var dataBlob = new Blob([byteData], {type: "data:application/octet-stream"});
+            saveAs(dataBlob, this.paperFilename);
+          })
+
           vant.Notify({ type: 'success', message: 'Process completed sucessfully, download will start automatically...' });
         })
         .catch(err => {

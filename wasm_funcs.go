@@ -33,5 +33,5 @@ func GeneratePaper(this js.Value, args []js.Value) interface{} {
 		return err.Error()
 	}
 
-	return fmt.Sprintf("data:application/octet-stream;base64,%s", base64.StdEncoding.EncodeToString(buf.Bytes()))
+	return fmt.Sprintf("data:application/msword;base64,%s", base64.StdEncoding.EncodeToString(buf.Bytes()))
 }
