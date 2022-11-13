@@ -1,0 +1,34 @@
+version: '3'
+
+tasks:
+
+  build-server:
+    cmds:
+      - gox -osarch="windows/amd64" -ldflags "-s -w" -output "dist/papermaker_windows_amd64.exe" ./cmd/server/
+      - gox -osarch="linux/amd64" -ldflags="-s -w -d" -output="dist/papermaker_linux_amd64" ./cmd/server/
+  
+  build-wasm:
+    cmds:
+      # - cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" .
+      - "${PWD}/node_modules/.bin/esbuild public/js/app.js --bundle --minify --outfile=public/js/app.min.js"
+      - GOOS=js GOARCH=wasm go build -ldflags "-s -w -d" -o public/main.wasm cmd/wasm/main.go
+
+  build:
+    deps: [ build-wasm, build-server ] 
+    cmds:
+      - echo "Build completed"
+
+  run:
+    deps: [ build ] 
+    cmds:
+      - caddy run -config Caddyfile.dev
+
+  deploy:
+    deps: [ build ]
+    cmds:
+      - node ftpdeploy.js
+  
+  test:
+    cmds:
+      - go test -timeout 2m -cover -coverprofile=coverage.txt -covermode=atomic ./...
+      

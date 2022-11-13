@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Paper Maker App by Zikani</title>
+  <link
+  rel="stylesheet"
+  href="https://fastly.jsdelivr.net/npm/vant@3/lib/index.css"
+/>
+  <link rel="prefetch" href="main.wasm">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="https://unpkg.com/axios@0.26.0/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/vue@3.2.40/dist/vue.global.prod.js"></script>
+  <script src="https://fastly.jsdelivr.net/npm/vant@3/lib/vant.min.js"></script>
+  <script src="js/wasm_exec.js"></script>
+</head>
+<body>
+  <noscript>
+    <strong>We're sorry but Paper Maker App doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+  </noscript>
+  <div id="app">
+      <div class="preloader">
+          <div class="preloader-content">
+            <img src="img/logo.png" width="100px" height="100px" alt="">
+            <h1>Paper Maker App</h1>
+            <p>Loading ...</p>
+            <small>Built by <a href="https://zikani.me">zikani03</a></small>
+          </div>
+      </div>
+  </div>
+
+  <script type="text/html" id="app-template">
+    <van-nav-bar
+      :title="appTitle"
+    />
+    <van-tabs v-model:active="activeTabName">
+      <van-tab title="New Paper" name="newPaperTab">
+
+        <van-cell-group inset>
+          <van-field
+            v-model="subjectName"
+            name="subjectName"
+            label="Subject"
+            placeholder="Subject"
+            :rules="[{ required: true, message: 'Subject is required' }]"
+          />
+
+          <van-field
+            v-model="classTerm"
+            name="classTerm"
+            label="Term or Year"
+            placeholder="Term or Year"
+            :rules="[{ required: true, message: 'Term or Year is required' }]"
+          />
+
+          <van-field
+            v-model="className"
+            name="className"
+            label="Class Name"
+            placeholder="Class Name"
+            :rules="[{ required: true, message: 'Class is required' }]"
+          />
+          <van-field
+            v-model="teacherName"
+            name="teacherName"
+            label="Teacher Name"
+            placeholder="Teacher Name"
+            :rules="[{ required: true, message: 'Teacher Name is required' }]"
+          />
+          <van-field
+            v-model="schoolName"
+            name="schoolName"
+            label="School Name"
+            placeholder="School Name"
+            :rules="[{ required: true, message: 'School Name is required' }]"
+          />
+          <van-field
+            v-model="timeAllowed"
+            name="timeAllowed"
+            label="Time Allowed"
+            placeholder="e.g. 2.5 Hours"
+            :rules="[{ required: true, message: 'Time Allowed is required' }]"
+          />
+          <van-field
+            v-model="examDate"
+            name="examDate"
+            label="Exam Date"
+            placeholder="e.g. 30 / 12 / 2022"
+            :rules="[{ required: true, message: 'Exam Date is required' }]"
+          />
+
+          <van-field
+            v-model="selectedExamTypeModel"
+            is-link
+            is-readonly
+            label="Paper Format"
+            :placeholder="selectedExamType ? selectedExamType.text : 'Choose the format'"
+            @click="showExamOptionsPicker = true"
+          />
+          <van-popup v-model:show="showExamOptionsPicker" round position="bottom">
+            <van-picker
+              title="Paper Format"
+              :columns="examTypeColumns"
+              cancelButtonText="Cancel"
+              confirmButtonText="Select"
+              @cancel="showExamOptionsPicker = false"
+              @confirm="onExamOptionSelected"
+            />
+          </van-popup>
+
+          <!-- <van-checkbox v-model="hasMultipleSections">Has Multiple Sections?</van-checkbox> -->
+
+          <van-divider v-show="hasMultipleSections">Sections</van-divider>
+
+          <van-cell-group v-show="hasMultipleSections">
+            <van-button type="primary" round size="mini" class="bottom-button"  @click="isEditingSection = true">Add a new section</van-button>
+            <van-empty v-if="!hasSections" image="error" description="No sections created.">
+              <van-button type="primary" round size="mini" class="bottom-button"  @click="isEditingSection = true">Click here to add a new section</van-button>
+            </van-empty>  
+            <van-list v-else>
+              <van-cell v-for="s in sections" :key="s.id" :title="'Section: ' + s.name" />
+            </van-list>
+          </van-cell-group>
+
+          <van-divider>Questions</van-divider>
+          
+          <van-button type="primary" round size="mini" @click="isEditingQuestion = true">Add New Question</van-button>
+
+          <div v-if="questions.length < 1">
+            <van-empty image="error" description="No questions created.">
+              <span style="color: royalblue; cursor: pointer;" @click="isEditingQuestion = true">Click here to add a new question</span>
+            </van-empty>
+          </div>
+          <van-collapse v-model="uncollapsedQuestions" v-else>
+            <van-collapse-item :title="(idx + 1)  + '. ' + q.content" v-for="(q, idx) in questions" :key="q.id">
+              <article>
+                <div class="question-content">{{idx}}. {{ q.content }}</div>
+              </article>
+            </van-collapse-item>
+          </van-collapse>
+          <!-- TODO: implement advanced settings  -->
+          <!-- <van-divider>Advanced Settings</van-divider> -->
+          <!-- <van-field
+            v-model="outputName"
+            name="outputName"
+            label="File Name"
+            :placeholder="title + '.docx' "
+            :rules="[{ required: true, message: 'File Name is required' }]"
+          /> -->
+
+          <!-- <van-field name="radio" label="Columns">
+            <template #input>
+              <van-radio-group v-model="columnCount" direction="horizontal">
+                <van-radio name="1">Single Column</van-radio>
+                <van-radio name="2">Double Column</van-radio>
+              </van-radio-group>
+            </template>
+          </van-field> -->
+
+          <div>
+            
+            <div v-show="paperGenerated" style="padding: 0.3em;">
+              <small>
+                <a :href="this.downloadedDataBase64URL" ref="downloadEl" :download="paperFilename">Click here</a>&nbsp; if download does not start automatically
+              </small>
+            </div>
+
+            <van-button type="primary" round block @click.prevent="submitGenerate">Generate Exam Paper (.docx)</van-button>
+
+          </div>
+        </van-cell-group> 
+
+
+
+      </van-tab>
+      <!-- <van-tab title="Your Papers" name="a">content of tab 1</van-tab> -->
+      <van-tab title="About" name="aboutTab">
+        <van-cell-group style="padding: 0.25em">
+          <p>Paper Maker App (better name pending) is a simple progressive web app that enables Teachers to create basic Examination paper documents on their mobile phone - it currently generates Word .docx Documents so that they can be edited. </p>
+          <strong>It is in the alpha version stage and still a Work-In-Progress </strong>
+          <h4>Developer</h4>
+          <p>Developed by <a href="mailto:zikani.nmwase@ymail.com">Zikani Nyirenda Mwase &lt;zikani.nmwase [at] ymail.com&gt;</a></p>
+
+          <h4>How it works</h4>
+          <p>This is built with some awesom Open-Source tools: Go, VueJS, <a href="https://vant-ui.github.io/vant">VANT UI</a>, and uses WASM to enable creating word documents offline. If WASM isn't available for some reason the app falls back it's server side API to process the request. </p>
+
+          <p>Blog post coming soon at <a href="https://code.zikani.me">code.zikani.me</a></p>
+        </van-cell-group>
+      </van-tab>
+    </van-tabs>
+
+    <van-popup
+      v-model:show="isEditingQuestion"
+      closeable
+      position="bottom"
+      :style="{ height: '30%' }"
+    >
+
+      <van-field
+          v-model="newQuestion.content"
+          name="questionContent"
+          label="Question"
+          placeholder="Type the question here"
+          :rules="[{ required: true, message: 'Question Content is required' }]"
+        />
+
+        <van-cell-group v-if="isMultipleChoiceSupported">
+          <van-checkbox v-model="newQuestion.isMultipleChoice">Multiple Choice?</van-checkbox>
+
+        </van-cell-group>
+
+      <van-button type="primary" round block @click="saveOrEditQuestion">Add Question</van-button>
+    </van-popup>
+
+    <van-popup
+      v-model:show="isEditingSection"
+      closeable
+      position="bottom"
+      :style="{ height: '30%' }"
+    >
+        <van-field
+        v-model="newSection.name"
+        name="sectionName"
+        label="Section Name"
+        placeholder="Section Name"
+        :rules="[{ required: true, message: 'Section Name is required' }]"
+      />
+      <van-button type="primary" round block @click="saveOrEditSection">Add Section</van-button>
+    </van-popup>
+
+  </script>
+  <script src="js/app.min.js"></script>
+</body>
+</html>

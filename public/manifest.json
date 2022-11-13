@@ -1,0 +1,10 @@
+{
+    "name": "PMA: Paper Maker App",
+    "short_name": "PMA",
+    "theme_color": "#301453",
+    "background_color": "#301453",
+    "display": "standalone",
+    "orientation": "portrait",
+    "scope": "/papermaker/",
+    "start_url": "/papermaker/"
+  }

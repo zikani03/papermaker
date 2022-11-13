@@ -1,0 +1,4 @@
+localhost:3400 {
+	root public
+	file_server browse
+}

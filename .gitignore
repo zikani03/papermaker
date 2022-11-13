@@ -1,0 +1,6 @@
+/node_modules/
+/dist/
+ftpdeploy.js
+*.zip
+index.zip
+.env
