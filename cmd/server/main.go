@@ -17,7 +17,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/zikani03/papermaker"
-	"github.com/zikani03/papermaker/public"
+	public "github.com/zikani03/papermaker/app"
 )
 
 func main() {
