@@ -1,7 +1,7 @@
-papermaker-wasm
-===============
+papermaker
+==========
 
-Simple (progressive) web app that allows Teachers to examination papers as .docx documents. 
+Papermaker is a simple (progressive)  web app to help Teachers form exam papers.
 Built with VueJS, Vant, Go, WASM and docxlib
 
 ## Building
