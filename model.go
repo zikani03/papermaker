@@ -88,6 +88,16 @@ func (p *ExamPaper) Validate() ValidationErrors {
 	return errs
 }
 
+// TotalMarks calculates the total marks for the Questions
+func (p *ExamPaper) TotalMarks() int {
+	totalMarks := 0
+	for _, q := range p.Questions {
+		totalMarks += q.Marks
+	}
+	return totalMarks
+}
+
+// WriteDocx writes the paper as a Docx to an io.Writer
 func (p *ExamPaper) WriteDocx(w io.Writer) error {
 	docxw := docxlib.New()
 	para := docxw.AddParagraph()
@@ -135,6 +145,7 @@ type ExamQuestion struct {
 	QuestionType  string                 `json:"questionType"`
 	AnswerOptions []MultipleChoiceOption `json:"answerOptions"`
 	SortOrder     int                    `json:"sortOrder"`
+	Marks         int                    `json:"marks"`
 	Image         ImageInfo              `json:"-"`
 }
 
