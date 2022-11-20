@@ -16,6 +16,8 @@ import {
     Picker,
     Popup,
     Switch,
+    Radio,
+    RadioGroup,
     Tab,
     Tabs,
 } from 'vant'
@@ -40,6 +42,8 @@ app.use(NavBar)
 app.use(Notify)
 app.use(Picker)
 app.use(Popup)
+app.use(Radio)
+app.use(RadioGroup)
 app.use(Switch)
 app.use(Tab)
 app.use(Tabs)
