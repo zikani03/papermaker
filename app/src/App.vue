@@ -45,6 +45,22 @@ function fallbackAPIBackedGeneratePaper(data, outputFormat)  {
       })
     })
 }
+
+function resetNewQuestion() {
+  let newQuestionData = {
+    id: '',
+    title: '',
+    content: '',
+    questionType: '',
+    numAnswerOptions: 4,
+    answerOptions: [],
+  };
+
+  for(var i = 0; i < newQuestionData.numAnswerOptions; i++) {
+    newQuestionData.answerOptions.push({ id: i, idx: i, content: '', })
+  }
+  return newQuestionData;
+}
   
 export default {
     // template: document.getElementById('app-template').innerHTML,
@@ -61,7 +77,7 @@ export default {
         schoolName: '',
         subjectName: '',
         selectedExamType: null,
-        selectedExamTypeModel: '',
+        selectedExamTypeModel: 'free_form',
         outputFormat: "docx",
         examDate: '',
         timeAllowed: '',
@@ -76,13 +92,7 @@ export default {
           name: '',
           displaySectionName: true,
         },
-        newQuestion: {
-          id: '',
-          title: '',
-          content: '',
-          isMultipleChoice: false,
-          answerOptions: [],
-        },
+        newQuestion: resetNewQuestion(),
         downloadedData: null,
         outputName: '',        
         // UI stuff
@@ -94,9 +104,9 @@ export default {
         paperGenerated: false,
         isWasmModuleLoaded: false,
         examTypeColumns: [
-          // { value: "mixed", text: "Mixed (Multiple Choice and Freeform)" },
-          // { value: "multiple_choice", text: "Multiple Choice" },
           { value: "free_form", text: "Free Form" },
+          { value: "multiple_choice", text: "Multiple Choice" },
+          { value: "mixed", text: "Mixed" },
         ],
         showExamOptionsPicker: false,
         uncollapsedQuestions: [],
@@ -113,8 +123,12 @@ export default {
         return `${this.subjectName} - ${this.classTerm}`
       },
 
+      newQuestionIsMultipleChoice() {
+        return this.newQuestion.questionType == "multiple_choice"
+      },
+
       isMultipleChoiceSupported() {
-        return this.selectedExamType && (this.selectedExamType.value == 'multiple_choice' || this.selectedExamType.value == 'mixed');
+        return this.selectedExamTypeModel && (this.selectedExamTypeModel == 'multiple_choice' || this.selectedExamTypeModel == 'mixed');
       },
 
       hasSections() {
@@ -151,14 +165,17 @@ export default {
   
     methods: {      
 
+      multipleChoiceLabel(idx, type = "alphabet") {
+        if (type === "alphabet")
+          return ["A","B","C","D","E","F","G","H","I"][idx] + ") ";
+          if (type === "numeric") 
+            return `${idx}. `;
+          if (type === "numeric_roman") 
+            return ["i","ii","iii","iv","v","vi","vii","viii","viiii"][idx] + ") ";
+      },
+
       resetNewQuestion() {
-        this.newQuestion = {
-          id: '',
-          title: '',
-          content: 'Type the question here',
-          isMultipleChoice: false,
-          answerOptions: [],
-        }
+        this.newQuestion = resetNewQuestion()
       },
 
       prevQuestion() {
@@ -356,24 +373,13 @@ export default {
             :rules="[{ required: true, message: 'Exam Date is required' }]"
           />
 
-          <van-field
-            v-model="selectedExamTypeModel"
-            is-link
-            is-readonly
-            label="Paper Format"
-            :placeholder="selectedExamType ? selectedExamType.text : 'Choose the format'"
-            @click="showExamOptionsPicker = true"
-          />
-          <van-popup v-model:show="showExamOptionsPicker" round position="bottom">
-            <van-picker
-              title="Paper Format"
-              :columns="examTypeColumns"
-              cancelButtonText="Cancel"
-              confirmButtonText="Select"
-              @cancel="showExamOptionsPicker = false"
-              @confirm="onExamOptionSelected"
-            />
-          </van-popup>
+          <van-field name="radio" label="Type">
+            <template #input>
+              <van-radio-group v-model="selectedExamTypeModel" direction="horizontal">
+                <van-radio v-for="e in examTypeColumns" :name="e.value">{{ e.text }}</van-radio>
+              </van-radio-group>
+            </template>
+          </van-field>
 
           <!-- <van-checkbox v-model="hasMultipleSections">Has Multiple Sections?</van-checkbox> -->
 
@@ -442,28 +448,7 @@ export default {
       </van-tab>
       <!-- <van-tab title="Your Papers" name="a">content of tab 1</van-tab> -->
       <van-tab title="About" name="aboutTab">
-        <van-cell-group style="padding: 0.25em">
-          <p>Paper Maker App (better name pending) is a simple progressive web app that enables Teachers to create basic Examination paper documents on their mobile phone - it currently generates Word .docx Documents so that they can be edited. </p>
-          <strong>It is in the alpha version stage and still a Work-In-Progress </strong>
-          <h4>Developer</h4>
-          <p>Developed by <a href="mailto:zikani.nmwase@ymail.com">Zikani Nyirenda Mwase &lt;zikani.nmwase [at] ymail.com&gt;</a></p>
-
-
-          <h4>How it works</h4>
-          <p>This is built with some awesom Open-Source tools: Go, VueJS, <a href="https://vant-ui.github.io/vant">VANT UI</a>, and uses WASM to enable creating word documents offline. If WASM isn't available for some reason the app falls back it's server side API to process the request. </p>
-
-          <p>Blog post coming soon at <a href="https://code.zikani.me">code.zikani.me</a></p>
-        </van-cell-group>
-
-        <van-cell-group>
-          <van-divider>Settings</van-divider>
-          <van-cell center title="Generate documents offline">
-            <template #right-icon>
-              <van-switch v-if="isWasmModuleLoaded" v-model="useOfflineMode" size="24" />
-              <van-switch v-else disabled size="24" :value="false" />
-            </template>
-          </van-cell>
-        </van-cell-group>
+        <About />
       </van-tab>
     </van-tabs>
 
@@ -471,8 +456,18 @@ export default {
       v-model:show="isEditingQuestion"
       closeable
       position="bottom"
-      :style="{ height: '30%' }"
+      :style="{ height: '70%' }"
     >
+      <h4>Create a Question</h4>
+
+      <van-field name="radio" label="Type">
+        <template #input>
+          <van-radio-group v-model="newQuestion.questionType" direction="horizontal">
+            <van-radio name="multiple_choice" :disabled="!isMultipleChoiceSupported">Multiple Choice</van-radio>
+            <van-radio name="free_form">Free Form</van-radio>
+          </van-radio-group>
+        </template>
+      </van-field>
 
       <van-field
           v-model="newQuestion.content"
@@ -482,8 +477,23 @@ export default {
           :rules="[{ required: true, message: 'Question Content is required' }]"
         />
 
-        <van-cell-group v-if="isMultipleChoiceSupported">
-          <van-checkbox v-model="newQuestion.isMultipleChoice">Multiple Choice?</van-checkbox>
+        <van-cell-group v-show="newQuestionIsMultipleChoice">
+          <h5>Multiple Choice Answers</h5>      
+          <van-button type="primary" size="mini" @click="newQuestion.numAnswerOptions++">Add another answer</van-button>
+
+          <van-cell-group>
+            <van-field
+            v-for="opt of newQuestion.answerOptions"
+            v-model="opt.content"
+              :key="opt.id"
+              name="answerOption1"
+              :label="multipleChoiceLabel(opt.idx)"
+              placeholder="Type answer"
+              :rules="[{ required: true, message: 'Answer options is required' }]"
+            />
+
+
+          </van-cell-group>
 
         </van-cell-group>
 
