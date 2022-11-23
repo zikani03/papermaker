@@ -2,5 +2,5 @@ package app
 
 import "embed"
 
-//go:embed dist/*
+//go:embed dist
 var StaticFS embed.FS

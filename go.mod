@@ -9,4 +9,7 @@ require (
 	github.com/joho/godotenv v1.4.0
 )
 
-require github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
+require (
+	github.com/gingfrederik/docx v0.0.1 // indirect
+	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
+)

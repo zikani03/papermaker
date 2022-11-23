@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -78,7 +79,11 @@ func main() {
 		w.Write([]byte(dataURL))
 	})
 
-	FileServer(r, "/", http.FS(public.StaticFS))
+	distFS, err := fs.Sub(public.StaticFS, "dist")
+	if err != nil {
+		log.Fatal(err)
+	}
+	FileServer(r, "/", http.FS(distFS))
 
 	// FileServer(r, "/", http.Dir("./public"))
 	log.Println("Server started")
