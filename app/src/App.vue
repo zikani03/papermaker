@@ -127,6 +127,10 @@ export default {
         return this.newQuestion.questionType == "multiple_choice"
       },
 
+      isFreeFormSupported() {
+        return this.selectedExamTypeModel && (this.selectedExamTypeModel == 'free_form' || this.selectedExamTypeModel == 'mixed');
+      },
+
       isMultipleChoiceSupported() {
         return this.selectedExamTypeModel && (this.selectedExamTypeModel == 'multiple_choice' || this.selectedExamTypeModel == 'mixed');
       },
@@ -464,7 +468,7 @@ export default {
         <template #input>
           <van-radio-group v-model="newQuestion.questionType" direction="horizontal">
             <van-radio name="multiple_choice" :disabled="!isMultipleChoiceSupported">Multiple Choice</van-radio>
-            <van-radio name="free_form">Free Form</van-radio>
+            <van-radio name="free_form" :disabled="!isFreeFormSupported">Free Form</van-radio>
           </van-radio-group>
         </template>
       </van-field>
