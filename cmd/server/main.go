@@ -49,35 +49,7 @@ func main() {
 		w.Write([]byte("Healthy :)"))
 	})
 
-	r.Post("/api/v1/generate", func(w http.ResponseWriter, r *http.Request) {
-		requestBody, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		var paperRequest papermaker.ExamPaper
-		err = json.Unmarshal([]byte(requestBody), &paperRequest)
-		if err != nil {
-			http.Error(w, "failed to generate pdf", http.StatusInternalServerError)
-			return
-		}
-
-		validationErrors := paperRequest.Validate()
-		if validationErrors != nil {
-			http.Error(w, validationErrors.ToJSON(), http.StatusBadRequest)
-			return
-		}
-
-		var buf bytes.Buffer
-		if err := paperRequest.WriteDocx(&buf); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		base64Encoded := base64.StdEncoding.EncodeToString(buf.Bytes())
-		dataURL := fmt.Sprintf("data:application/octet-stream;base64,%s", base64Encoded)
-		w.Write([]byte(dataURL))
-	})
+	r.Post("/api/v1/generate", apiV1Generate)
 
 	distFS, err := fs.Sub(public.StaticFS, "dist")
 	if err != nil {
@@ -96,6 +68,39 @@ func main() {
 	if err := http.ListenAndServe(address, r); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// @method [post]
+// @route /api/v1/generate
+//
+func apiV1Generate(w http.ResponseWriter, r *http.Request) {
+	requestBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var paperRequest papermaker.ExamPaper
+	err = json.Unmarshal([]byte(requestBody), &paperRequest)
+	if err != nil {
+		http.Error(w, "failed to generate pdf", http.StatusInternalServerError)
+		return
+	}
+
+	validationErrors := paperRequest.Validate()
+	if validationErrors != nil {
+		http.Error(w, validationErrors.ToJSON(), http.StatusBadRequest)
+		return
+	}
+
+	var buf bytes.Buffer
+	if err := paperRequest.WriteDocx(&buf); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	base64Encoded := base64.StdEncoding.EncodeToString(buf.Bytes())
+	dataURL := fmt.Sprintf("data:application/octet-stream;base64,%s", base64Encoded)
+	w.Write([]byte(dataURL))
 }
 
 // FileServer conveniently sets up a http.FileServer handler to serve
