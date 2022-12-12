@@ -70,3 +70,15 @@ fetch("main.wasm").then(wasmModule => {
       mountedApp.useOfflineMode = false;
     })
 })
+
+window.addEventListener('load', function() {
+  if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(() => {
+          console.log("Service worker registered")
+      })
+      .catch(err => {
+          console.warn("Failed to register service worker")
+          console.warn(err)
+      })
+  }
+})
