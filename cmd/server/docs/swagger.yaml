@@ -1,0 +1,42 @@
+basePath: /api/v1
+host: papermaker.labs.zikani.me
+info:
+  contact:
+    email: zikani.nmwase[at]ymail.com
+    name: Zikani Nyirenda Mwase
+    url: https://papermaker.labs.zikani.me
+  description: PaperMaker API server.
+  license:
+    name: MIT
+  termsOfService: https://papermaker.labs.zikani.me
+  title: Paper Maker
+  version: 0.1.0
+paths:
+  /accounts:
+    get:
+      consumes:
+      - application/json
+      description: generates a .docx paper
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Generate a Paper
+      tags:
+      - paper
+swagger: "2.0"

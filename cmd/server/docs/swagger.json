@@ -1,0 +1,62 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "PaperMaker API server.",
+        "title": "Paper Maker",
+        "termsOfService": "https://papermaker.labs.zikani.me",
+        "contact": {
+            "name": "Zikani Nyirenda Mwase",
+            "url": "https://papermaker.labs.zikani.me",
+            "email": "zikani.nmwase[at]ymail.com"
+        },
+        "license": {
+            "name": "MIT"
+        },
+        "version": "0.1.0"
+    },
+    "host": "papermaker.labs.zikani.me",
+    "basePath": "/api/v1",
+    "paths": {
+        "/accounts": {
+            "get": {
+                "description": "generates a .docx paper",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "paper"
+                ],
+                "summary": "Generate a Paper",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

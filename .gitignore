@@ -4,3 +4,4 @@ ftpdeploy.js
 *.zip
 index.zip
 .env
+go.sum

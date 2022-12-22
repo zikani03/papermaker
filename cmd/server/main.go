@@ -15,19 +15,30 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/zikani03/papermaker"
 	public "github.com/zikani03/papermaker/app"
+	_ "github.com/zikani03/papermaker/cmd/server/docs"
 )
 
-func main() {
-	envErr := godotenv.Load(".env")
-	if envErr != nil {
-		fmt.Printf("Please configure via a .env file")
-		return
-	}
+// @title Paper Maker
+// @version 0.1.0
+// @description PaperMaker API server.
+// @termsOfService https://papermaker.labs.zikani.me
 
+// @contact.name Zikani Nyirenda Mwase
+// @contact.url https://papermaker.labs.zikani.me
+// @contact.email zikani.nmwase[at]ymail.com
+
+// @license.name MIT
+// @license.url
+
+// @host papermaker.labs.zikani.me
+// @BasePath /api/v1
+func main() {
 	r := chi.NewRouter()
 
 	r.Use(cors.Handler(cors.Options{
@@ -48,6 +59,10 @@ func main() {
 		w.Header().Add("X-Healthcheck", "ok")
 		w.Write([]byte("Healthy :)"))
 	})
+
+	r.Get("/apidocs/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:7765/apidocs/doc.json"), //The url pointing to API definition
+	))
 
 	r.Post("/api/v1/generate", apiV1Generate)
 
@@ -70,9 +85,17 @@ func main() {
 	}
 }
 
-// @method [post]
-// @route /api/v1/generate
-//
+// GeneratePaper godoc
+// @Summary      Generate a Paper
+// @Description  generates a .docx paper
+// @Tags         paper
+// @Accept       json
+// @Produce      text/plain
+// @Success      200  {string}  string
+// @Failure      400  {object}  string
+// @Failure      404  {object}  string
+// @Failure      500  {object}  string
+// @Router       /accounts [get]
 func apiV1Generate(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
