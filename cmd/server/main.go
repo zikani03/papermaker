@@ -61,7 +61,7 @@ func main() {
 	})
 
 	r.Get("/apidocs/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:7765/apidocs/doc.json"), //The url pointing to API definition
+		httpSwagger.URL("/apidocs/doc.json"), //The url pointing to API definition
 	))
 
 	r.Post("/api/v1/generate", apiV1Generate)
@@ -77,7 +77,7 @@ func main() {
 
 	address := os.Getenv("PAPERMAKER_ADDRESS")
 	if address == "" {
-		address = "localhost:7765"
+		address = "localhost:8000"
 	}
 
 	if err := http.ListenAndServe(address, r); err != nil {
