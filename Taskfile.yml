@@ -6,6 +6,7 @@ tasks:
     deps: [ build-wasm ]
     cmds:
       - gox -osarch="windows/amd64" -ldflags "-s -w" -output "dist/papermaker_windows_amd64.exe" ./cmd/server/
+      - gox -osarch="linux/amd64" -ldflags "-s -w" -output "dist/papermaker_linux_amd64" ./cmd/server/
       - gox -osarch="linux/amd64" -ldflags="-s -w -d" -output="dist/papermaker_linux_amd64" ./cmd/server/
   
   build-wasm:
