@@ -8,10 +8,10 @@ Built with VueJS, Vant, Go, WASM and docxlib
 
 You will need the following to build:
 
-- Go 1.18+
+- Go 1.21+
 - Task
-- node / npm
-- esbuild
+- node v20+ w/ npm 7+
+- gox
 
 ```sh
 $ task build
