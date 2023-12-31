@@ -6,8 +6,7 @@ import (
 	"io"
 	"strings"
 
-	gingfrederikdocx "github.com/gingfrederik/docx"
-	"github.com/gonfva/docxlib"
+	docx "github.com/fumiama/go-docx"
 )
 
 type EducationLevel string
@@ -99,59 +98,32 @@ func (p *ExamPaper) TotalMarks() int {
 }
 
 // WriteDocx writes the paper as a Docx to an io.Writer
-func (p *ExamPaper) WriteDocxLib(w io.Writer) error {
-	docxw := docxlib.New()
-	para := docxw.AddParagraph()
-	para.AddText(strings.ToUpper(p.SchoolName)).Size(18)
-
-	para = docxw.AddParagraph()
-	para.AddText(strings.ToUpper(p.Title)).Size(14)
-
-	para = docxw.AddParagraph()
-	para.AddText(p.SubjectName).Size(14)
-
-	para = docxw.AddParagraph()
-	para.AddText(string(p.ClassName)).Size(12)
-
-	para = docxw.AddParagraph()
-	para.AddText(p.TeacherName).Size(12)
-
-	para = docxw.AddParagraph()
-	para.AddText(fmt.Sprintf("DATE: %s\t\t TIME ALLOWED: %s", p.ExamDate, p.TimeAllowed)).Size(12)
-
-	for _, question := range p.Questions {
-		question.WriteDocxLib(docxw)
-	}
-
-	return docxw.Write(w)
-}
-
-// WriteDocx writes the paper as a Docx to an io.Writer
 func (p *ExamPaper) WriteDocx(w io.Writer) error {
-	docxw := gingfrederikdocx.NewFile()
+	docxw := docx.NewA4()
 	para := docxw.AddParagraph()
-	para.AddText(strings.ToUpper(p.SchoolName)).Size(18)
+	para.AddText(strings.ToUpper(p.SchoolName)).Size("18")
 
 	para = docxw.AddParagraph()
-	para.AddText(strings.ToUpper(p.Title)).Size(14)
+	para.AddText(strings.ToUpper(p.Title)).Size("14")
 
 	para = docxw.AddParagraph()
-	para.AddText(p.SubjectName).Size(14)
+	para.AddText(p.SubjectName).Size("14")
 
 	para = docxw.AddParagraph()
-	para.AddText(string(p.ClassName)).Size(12)
+	para.AddText(string(p.ClassName)).Size("12")
 
 	para = docxw.AddParagraph()
-	para.AddText(p.TeacherName).Size(12)
+	para.AddText(p.TeacherName).Size("12")
 
 	para = docxw.AddParagraph()
-	para.AddText(fmt.Sprintf("DATE: %s\t\t TIME ALLOWED: %s", p.ExamDate, p.TimeAllowed)).Size(12)
+	para.AddText(fmt.Sprintf("DATE: %s\t\t TIME ALLOWED: %s", p.ExamDate, p.TimeAllowed)).Size("12")
 
 	for _, question := range p.Questions {
 		question.WriteDocx(docxw)
 	}
 
-	return docxw.Write(w)
+	_, err := docxw.WriteTo(w)
+	return err
 }
 
 const (
@@ -178,29 +150,9 @@ type ExamQuestion struct {
 	Image         ImageInfo              `json:"-"`
 }
 
-func (q *ExamQuestion) WriteDocxLib(docxw *docxlib.DocxLib) error {
+func (q *ExamQuestion) WriteDocx(docxw *docx.Docx) error {
 	qpara := docxw.AddParagraph()
-	qpara.AddText(fmt.Sprintf("%d. %s", q.SortOrder, q.Content)).Size(12)
-
-	// TODO: Add condition block for the other type type of questions
-	if q.QuestionType == MultipleChoiceQuestion {
-		for idx, answers := range q.AnswerOptions {
-			qapara := docxw.AddParagraph()
-			qapara.AddText(fmt.Sprintf("%s ) \t %s", string("ABCDEFGHI"[idx]), answers.Content))
-		}
-	} else {
-		for i := 0; i < MaxFreeFormLines; i++ {
-			qapara := docxw.AddParagraph()
-			qapara.AddText("__________________________________________________________________")
-		}
-	}
-
-	return nil
-}
-
-func (q *ExamQuestion) WriteDocx(docxw *gingfrederikdocx.File) error {
-	qpara := docxw.AddParagraph()
-	qpara.AddText(fmt.Sprintf("%d. %s", q.SortOrder, q.Content)).Size(12)
+	qpara.AddText(fmt.Sprintf("%d. %s", q.SortOrder, q.Content)).Size("12")
 
 	// TODO: Add condition block for the other type type of questions
 	if q.QuestionType == MultipleChoiceQuestion {
